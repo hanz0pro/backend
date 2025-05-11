@@ -1,0 +1,8 @@
+Flask~=3.1.0
+Flask-JWT-Extended~=4.7.1
+Flask-SQLAlchemy
+Flask-Migrate~=4.1.0
+psycopg2-binary
+python-dotenv~=1.1.0
+Flask-Cors
+Werkzeug~=3.1.3
