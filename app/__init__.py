@@ -6,6 +6,8 @@ from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
 import os
 
+from app.services.jwt_global_error_handler import register_jwt_error_handlers
+
 load_dotenv()
 db = SQLAlchemy()
 migrate = Migrate()
@@ -25,8 +27,19 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
+    register_jwt_error_handlers(app)
+
+
 
     from .routes import api
-    app.register_blueprint(api, url_prefix='/api')
+    from .routes import game_bp
+    from app.routes.game_genre_routes import genre_bp
+    from app.routes.game_tag_routes import tag_bp
+    from app.services.global_error_handler import error_bp
 
+    app.register_blueprint(error_bp)
+    app.register_blueprint(genre_bp, url_prefix='/genre')
+    app.register_blueprint(tag_bp, url_prefix='/tag')
+    app.register_blueprint(api, url_prefix='/api')
+    app.register_blueprint(game_bp, url_prefix='/games')
     return app
