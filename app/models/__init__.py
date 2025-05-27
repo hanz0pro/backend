@@ -6,3 +6,4 @@ from .review_model import Review
 from .wish_list import WishList
 from .game_genre_model import Genre
 from .game_tag_model import Tag
+from .role_model import Role

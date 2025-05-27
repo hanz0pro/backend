@@ -1,5 +1,6 @@
 from app import db
-from datetime import datetime
+from app.models.role_model import user_roles
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -8,3 +9,4 @@ class User(db.Model):
     tasks = db.relationship('Task', backref='user', lazy=True)
     reviews = db.relationship('Review', backref='user', lazy=True, cascade="all, delete-orphan")
     wishlist = db.relationship('WishList', backref='user', lazy=True, cascade="all, delete-orphan")
+    roles = db.relationship('Role', secondary=user_roles, back_populates='users')

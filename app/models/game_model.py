@@ -7,6 +7,7 @@ class Game(db.Model):
     title = db.Column(db.String(100), nullable=False, unique=True)
     description = db.Column(db.Text)
     price = db.Column(db.Float)
+    discount = db.Column(db.Float)
     image_path = db.Column(db.String(255))
 
     # wiele gatunków
