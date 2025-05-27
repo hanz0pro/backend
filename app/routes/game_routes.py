@@ -95,13 +95,16 @@ def get_game_image(game_id):
     if not game.image_path:
         return {'error': 'Image not found'}, 404
 
-    backend_root = "D:/Programy/todo-app/backend"  # 👈 wpisujesz ręcznie swój katalog
-    full_path = os.path.join(backend_root, game.image_path.replace('\\', '/'))
+    backend_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))  # folder backend/
 
-    print("Full path:", full_path)
+    full_path = os.path.join(backend_root, game.image_path)
 
-    if not os.path.isfile(full_path):
+
+    normalized_full_path = full_path.replace('\\', '/')
+
+    print("Full path:", normalized_full_path)
+    if not os.path.isfile(normalized_full_path):
         return {'error': 'File not found on disk'}, 404
 
-    mimetype = mimetypes.guess_type(full_path)[0] or 'application/octet-stream'
-    return send_file(full_path, mimetype=mimetype)
+    mimetype = mimetypes.guess_type(normalized_full_path)[0] or 'application/octet-stream'
+    return send_file(normalized_full_path, mimetype=mimetype)
