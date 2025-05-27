@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -21,7 +23,12 @@ def create_app():
     app.config['JWT_TOKEN_LOCATION'] = ['headers']
     app.config['JWT_HEADER_NAME'] = 'Authorization'
     app.config['JWT_HEADER_TYPE'] = 'Bearer'
-
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(
+        minutes=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES_MINUTES', 15))
+    )
+    app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(
+        days=int(os.getenv('JWT_REFRESH_TOKEN_EXPIRES_DAYS', 30))
+    )
     CORS(app, origins=["http://localhost:5173"])
 
     db.init_app(app)
