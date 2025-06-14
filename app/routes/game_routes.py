@@ -7,7 +7,7 @@ from app import db
 from app.models.game_genre_model import Genre
 from app.models.game_model import Game
 from app.models.game_tag_model import Tag
-from app.routes import game_bp
+from app.routes import game_bp, api
 
 
 # 🔹 Pomocnicze: konwersja do JSON
@@ -29,7 +29,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@game_bp.route('', methods=['POST'])
+@api.route('games', methods=['POST'])
 def create_game():
     title = request.form.get('title')
     description = request.form.get('description')
@@ -73,19 +73,19 @@ def create_game():
     db.session.commit()
     return jsonify(game_to_dict(game)), 201
 # 🔸 Pobierz wszystkie gry
-@game_bp.route('', methods=['GET'])
+@api.route('games', methods=['GET'])
 def get_games():
     games = Game.query.all()
     return jsonify([game_to_dict(game) for game in games])
 
 # 🔸 Pobierz grę po ID
-@game_bp.route('/<int:game_id>', methods=['GET'])
+@api.route('games/<int:game_id>', methods=['GET'])
 def get_game(game_id):
     game = Game.query.get_or_404(game_id)
     return jsonify(game_to_dict(game))
 
 #Dodatkowy endpoint
-@game_bp.route('/<int:game_id>/image', methods=['GET'])
+@api.route('games/<int:game_id>/image', methods=['GET'])
 def get_game_image(game_id):
     import os
     import mimetypes

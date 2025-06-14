@@ -1,11 +1,12 @@
-from flask import Blueprint, request, jsonify
+from flask import request, jsonify
+
 from app import db
 from app.models.game_genre_model import Genre
-from app.routes import genre_bp
+from app.routes import genre_bp, api
 
 
 # Dodaj nowy gatunek
-@genre_bp.route('', methods=['POST'])
+@api.route('genre', methods=['POST'])
 def create_genre():
     data = request.json
     name = data.get('name')
@@ -23,7 +24,7 @@ def create_genre():
     return jsonify({'id': genre.id, 'name': genre.name}), 201
 
 # Pobierz wszystkie gatunki
-@genre_bp.route('', methods=['GET'])
+@api.route('genre', methods=['GET'])
 def get_genres():
     genres = Genre.query.all()
     return jsonify([{'id': genre.id, 'name': genre.name} for genre in genres])
