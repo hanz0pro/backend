@@ -15,7 +15,8 @@ def validate_rating(value):
         return None
     return value if 1 <= value <= 5 else None
 
-@api.route('/games/<int:game_id>/review', methods=['POST'])
+
+@api.route("/games/<int:game_id>/review", methods=["POST"])
 @jwt_required()
 def upsert_review(game_id):
     """
@@ -26,11 +27,14 @@ def upsert_review(game_id):
     }
     """
     data = request.get_json(silent=True) or {}
-    rating = validate_rating(data.get('rating'))
-    comment = (data.get('comment') or '').strip()
+    rating = validate_rating(data.get("rating"))
+    comment = (data.get("comment") or "").strip()
 
     if rating is None:
-        return jsonify({"message": "Pole 'rating' musi być liczbą całkowitą 1..5."}), 400
+        return (
+            jsonify({"message": "Pole 'rating' musi być liczbą całkowitą 1..5."}),
+            400,
+        )
 
     # Sprawdź czy gra istnieje
     game = Game.query.get(game_id)
@@ -48,36 +52,43 @@ def upsert_review(game_id):
             review.rating = rating
             review.comment = comment
             db.session.commit()
-            return jsonify({
-                "message": "Recenzja zaktualizowana.",
-                "review": {
-                    "id": review.id,
-                    "user_id": review.user_id,
-                    "game_id": review.game_id,
-                    "rating": review.rating,
-                    "comment": review.comment
-                }
-            }), 200
+            return (
+                jsonify(
+                    {
+                        "message": "Recenzja zaktualizowana.",
+                        "review": {
+                            "id": review.id,
+                            "user_id": review.user_id,
+                            "game_id": review.game_id,
+                            "rating": review.rating,
+                            "comment": review.comment,
+                        },
+                    }
+                ),
+                200,
+            )
         else:
             # INSERT
             review = Review(
-                user_id=user_id,
-                game_id=game_id,
-                rating=rating,
-                comment=comment
+                user_id=user_id, game_id=game_id, rating=rating, comment=comment
             )
             db.session.add(review)
             db.session.commit()
-            return jsonify({
-                "message": "Recenzja dodana.",
-                "review": {
-                    "id": review.id,
-                    "user_id": review.user_id,
-                    "game_id": review.game_id,
-                    "rating": review.rating,
-                    "comment": review.comment
-                }
-            }), 201
+            return (
+                jsonify(
+                    {
+                        "message": "Recenzja dodana.",
+                        "review": {
+                            "id": review.id,
+                            "user_id": review.user_id,
+                            "game_id": review.game_id,
+                            "rating": review.rating,
+                            "comment": review.comment,
+                        },
+                    }
+                ),
+                201,
+            )
 
     except Exception as e:
         db.session.rollback()
@@ -111,7 +122,8 @@ def get_my_reviews():
 
     return jsonify(result), 200
 
-@api.route('games/<int:game_id>/reviews', methods=['GET'])
+
+@api.route("games/<int:game_id>/reviews", methods=["GET"])
 def get_game_reviews(game_id):
     rows = (
         db.session.query(Review, User.username)
@@ -126,7 +138,7 @@ def get_game_reviews(game_id):
             "user_id": r.user_id,
             "username": username,
             "rating": r.rating,
-            "comment": r.comment
+            "comment": r.comment,
         }
         for r, username in rows
     ]

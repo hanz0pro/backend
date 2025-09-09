@@ -14,23 +14,23 @@ from app.routes import api
 # 🔹 Pomocnicze: konwersja do JSON
 def game_to_dict(game):
     return {
-        'id': game.id,
-        'title': game.title,
-        'description': game.description,
-        'price': game.price,
-        'image_path': game.image_path,
-        'genres': [genre.name for genre in game.genres],
-        'tags': [tag.name for tag in game.tags],
-        'discount': game.discount,
+        "id": game.id,
+        "title": game.title,
+        "description": game.description,
+        "price": game.price,
+        "image_path": game.image_path,
+        "genres": [genre.name for genre in game.genres],
+        "tags": [tag.name for tag in game.tags],
+        "discount": game.discount,
     }
 
 
-UPLOAD_FOLDER = 'static/images/games'  # lub inna ścieżka
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+UPLOAD_FOLDER = "static/images/games"  # lub inna ścieżka
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
 
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def parse_list(field: str) -> list[str]:
@@ -48,33 +48,34 @@ def parse_list(field: str) -> list[str]:
     vals_alt = request.form.getlist(f"{field}[]")
     return vals or vals_alt or []
 
+
 def to_float(val, default=None):
-    if val in (None, ''):
+    if val in (None, ""):
         return default
     try:
-        return float(str(val).replace(',', '.'))
+        return float(str(val).replace(",", "."))
     except ValueError:
         return default
 
 
-@api.route('games', methods=['POST'])
+@api.route("games", methods=["POST"])
 def create_game():
-    title = request.form.get('title')
-    description = request.form.get('description')
-    price_raw = request.form.get('price')
-    genres_in = parse_list('genres')
-    tags_in = parse_list('tags')
-    discount_raw = request.form.get('discount')
+    title = request.form.get("title")
+    description = request.form.get("description")
+    price_raw = request.form.get("price")
+    genres_in = parse_list("genres")
+    tags_in = parse_list("tags")
+    discount_raw = request.form.get("discount")
 
     if not title:
-        return jsonify({'error': 'Title is required'}), 400
+        return jsonify({"error": "Title is required"}), 400
 
     discount = to_float(discount_raw, default=0.0)
     if discount is None or discount < 0 or discount > 100:
         discount = 0.0
 
     # plik
-    image = request.files.get('image')
+    image = request.files.get("image")
     image_path = None
     if image and allowed_file(image.filename):
         filename = secure_filename(image.filename)
@@ -85,9 +86,15 @@ def create_game():
         image_path = f"static/images/games/{filename}"
 
     # cena -> float
-    price = float(price_raw) if price_raw not in (None, '') else None
+    price = float(price_raw) if price_raw not in (None, "") else None
 
-    game = Game(title=title, description=description, price=price, image_path=image_path, discount=discount)
+    game = Game(
+        title=title,
+        description=description,
+        price=price,
+        image_path=image_path,
+        discount=discount,
+    )
     db.session.add(game)
     db.session.flush()
 
@@ -107,21 +114,21 @@ def create_game():
 
 
 # 🔸 Pobierz wszystkie gry
-@api.route('games', methods=['GET'])
+@api.route("games", methods=["GET"])
 def get_games():
     games = Game.query.all()
     return jsonify([game_to_dict(game) for game in games])
 
 
 # 🔸 Pobierz grę po ID
-@api.route('games/<int:game_id>', methods=['GET'])
+@api.route("games/<int:game_id>", methods=["GET"])
 def get_game(game_id):
     game = Game.query.get_or_404(game_id)
     return jsonify(game_to_dict(game))
 
 
 # Dodatkowy endpoint
-@api.route('games/<int:game_id>/image', methods=['GET'])
+@api.route("games/<int:game_id>/image", methods=["GET"])
 def get_game_image(game_id):
     import os
     import mimetypes
@@ -129,17 +136,21 @@ def get_game_image(game_id):
     game = Game.query.get_or_404(game_id)
 
     if not game.image_path:
-        return {'error': 'Image not found'}, 404
+        return {"error": "Image not found"}, 404
 
-    backend_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))  # folder backend/
+    backend_root = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "..")
+    )  # folder backend/
 
     full_path = os.path.join(backend_root, game.image_path)
 
-    normalized_full_path = full_path.replace('\\', '/')
+    normalized_full_path = full_path.replace("\\", "/")
 
     print("Full path:", normalized_full_path)
     if not os.path.isfile(normalized_full_path):
-        return {'error': 'File not found on disk'}, 404
+        return {"error": "File not found on disk"}, 404
 
-    mimetype = mimetypes.guess_type(normalized_full_path)[0] or 'application/octet-stream'
+    mimetype = (
+        mimetypes.guess_type(normalized_full_path)[0] or "application/octet-stream"
+    )
     return send_file(normalized_full_path, mimetype=mimetype)

@@ -30,15 +30,15 @@ def add_to_wishlist(game_id):
         db.session.rollback()
         return jsonify({"message": "Nie udało się dodać do wishlisty."}), 500
 
-    return jsonify({
-        "message": "Dodano do wishlisty.",
-        "item": {
-            "id": wl.id,
-            "game_id": wl.game_id,
-            "user_id": wl.user_id
-        }
-    }), 201
-
+    return (
+        jsonify(
+            {
+                "message": "Dodano do wishlisty.",
+                "item": {"id": wl.id, "game_id": wl.game_id, "user_id": wl.user_id},
+            }
+        ),
+        201,
+    )
 
 
 @api.route("/users/me/wishlist", methods=["GET"])

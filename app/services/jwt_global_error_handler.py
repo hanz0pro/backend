@@ -1,12 +1,19 @@
 from flask import jsonify
 from flask_jwt_extended import JWTManager
 
+
 def register_jwt_error_handlers(app):
     jwt = JWTManager(app)
 
     @jwt.unauthorized_loader
     def handle_missing_token(reason):
-        return jsonify(error="Unauthorized", message="Brakuje nagłówka autoryzacji (Authorization header)."), 401
+        return (
+            jsonify(
+                error="Unauthorized",
+                message="Brakuje nagłówka autoryzacji (Authorization header).",
+            ),
+            401,
+        )
 
     @jwt.invalid_token_loader
     def handle_invalid_token(reason):
@@ -22,6 +29,9 @@ def register_jwt_error_handlers(app):
 
     @jwt.needs_fresh_token_loader
     def handle_fresh_token_required(jwt_header, jwt_payload):
-        return jsonify(error="Fresh Token Required", message="Wymagany świeży token JWT."), 401
+        return (
+            jsonify(error="Fresh Token Required", message="Wymagany świeży token JWT."),
+            401,
+        )
 
     return jwt

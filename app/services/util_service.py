@@ -1,8 +1,10 @@
 from app.models import User
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 
+
 def get_user_count():
     return User.query.count()
+
 
 def get_debug_token_info():
     try:

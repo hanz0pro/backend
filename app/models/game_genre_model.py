@@ -1,9 +1,11 @@
 from app import db
 
-game_genre = db.Table('game_genre',
-    db.Column('game_id', db.Integer, db.ForeignKey('game.id'), primary_key=True),
-    db.Column('genre_id', db.Integer, db.ForeignKey('genre.id'), primary_key=True)
+game_genre = db.Table(
+    "game_genre",
+    db.Column("game_id", db.Integer, db.ForeignKey("game.id"), primary_key=True),
+    db.Column("genre_id", db.Integer, db.ForeignKey("genre.id"), primary_key=True),
 )
+
 
 class Genre(db.Model):
     id = db.Column(db.Integer, primary_key=True)
