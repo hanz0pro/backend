@@ -30,7 +30,7 @@ def create_app():
         days=int(os.getenv('JWT_REFRESH_TOKEN_EXPIRES_DAYS', 30))
     )
     CORS(app, origins=["http://localhost:5173"])
-
+    CORS(app, origins=["http://localhost:8080"])
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
