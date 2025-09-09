@@ -47,6 +47,12 @@ docker run -d \
   myapp-backend-dev
 ````
 
+Następnie należy uruchomić migracje 
+
+````
+docker exec -it backend flask db upgrade
+````
+
 Backend będzie dostępny pod 
 
 ````
