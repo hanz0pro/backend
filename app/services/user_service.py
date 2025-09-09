@@ -5,6 +5,26 @@ from app.models import User, Role
 
 
 def register_user(data):
+    """
+    Rejestruje nowego użytkownika w systemie.
+
+    Args:
+        data (dict): Dane wejściowe w formacie:
+            {
+              "username": "string",  # wymagane, unikalna nazwa użytkownika
+              "password": "string"   # wymagane, hasło w postaci jawnej (zostanie zahashowane)
+            }
+
+    Returns:
+        tuple: (response, status_code)
+            - ({"msg": "User created"}, 201) – jeśli rejestracja się powiodła
+            - ({"msg": "User already exists"}, 409) – jeśli użytkownik o takiej nazwie już istnieje
+
+    Note:
+        - Hasło użytkownika jest zapisywane w bazie w postaci **hashu** (bcrypt).
+        - Nowy użytkownik automatycznie otrzymuje domyślną rolę `"user"` (o ile istnieje w tabeli `Role`).
+    """
+
     if User.query.filter_by(username=data["username"]).first():
         return {"msg": "User already exists"}, 409
 
@@ -23,6 +43,27 @@ def register_user(data):
 
 
 def login_user(data):
+    """
+    Loguje istniejącego użytkownika i zwraca token JWT.
+
+    Args:
+        data (dict): Dane wejściowe w formacie:
+            {
+              "username": "string",  # wymagane, nazwa użytkownika
+              "password": "string"   # wymagane, hasło w postaci jawnej
+            }
+
+    Returns:
+        tuple: (response, status_code)
+            - ({"access_token": "<jwt>"}, 200) – jeśli dane poprawne
+            - ({"msg": "Invalid credentials"}, 401) – jeśli login/hasło nieprawidłowe
+
+    Note:
+        - Do tokenu JWT dodawane są role użytkownika w polu `roles`.
+        - W `identity` tokenu zapisywany jest `user.id` (jako string).
+        - Token JWT należy przesyłać w nagłówku:
+            `Authorization: Bearer <token>`.
+    """
     user = User.query.filter_by(username=data["username"]).first()
     if user and check_password_hash(user.password, data["password"]):
         # Pobierz nazwy ról

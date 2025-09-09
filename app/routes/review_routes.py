@@ -9,6 +9,15 @@ from app.routes import api
 
 
 def validate_rating(value):
+    """
+    Waliduje ocenę gry.
+
+    Args:
+        value (int|str): Wartość do sprawdzenia.
+
+    Returns:
+        int|None: Ocena (1..5) jeśli poprawna, inaczej None.
+    """
     try:
         value = int(value)
     except (ValueError, TypeError):
@@ -20,11 +29,40 @@ def validate_rating(value):
 @jwt_required()
 def upsert_review(game_id):
     """
-    Body (JSON):
-    {
-      "rating": 5,            # wymagane, 1..5
-      "comment": "Świetna!"   # opcjonalne
-    }
+    Dodaje lub aktualizuje recenzję gry dla zalogowanego użytkownika.
+
+    Request JSON:
+        {
+          "rating": 5,            # wymagane, liczba całkowita 1..5
+          "comment": "Świetna!"   # opcjonalne, string
+        }
+
+    Response (201 Created) – dodano nową recenzję:
+        {
+          "message": "Recenzja dodana.",
+          "review": {
+            "id": 1,
+            "user_id": 3,
+            "game_id": 10,
+            "rating": 5,
+            "comment": "Świetna!"
+          }
+        }
+
+    Response (200 OK) – zaktualizowano istniejącą recenzję:
+        {
+          "message": "Recenzja zaktualizowana.",
+          "review": { ... }
+        }
+
+    Response (400 Bad Request):
+        {"message": "Pole 'rating' musi być liczbą całkowitą 1..5."}
+
+    Response (404 Not Found):
+        {"message": "Gra nie istnieje."}
+
+    Response (500 Internal Server Error):
+        {"message": "Nie udało się zapisać recenzji."}
     """
     data = request.get_json(silent=True) or {}
     rating = validate_rating(data.get("rating"))
@@ -100,6 +138,24 @@ def upsert_review(game_id):
 @api.route("/users/me/reviews", methods=["GET"])
 @jwt_required()
 def get_my_reviews():
+    """
+    Pobiera wszystkie recenzje zalogowanego użytkownika.
+
+    Request:
+        Wymaga JWT.
+
+    Response (200 OK):
+        [
+          {
+            "id": 1,
+            "game_id": 10,
+            "game_title": "Wiedźmin 3",
+            "rating": 5,
+            "comment": "Świetna!"
+          },
+          ...
+        ]
+    """
     user_id = get_jwt_identity()
 
     reviews = (
@@ -125,6 +181,24 @@ def get_my_reviews():
 
 @api.route("games/<int:game_id>/reviews", methods=["GET"])
 def get_game_reviews(game_id):
+    """
+    Pobiera wszystkie recenzje dla wybranej gry.
+
+    Args:
+        game_id (int): ID gry.
+
+    Response (200 OK):
+        [
+          {
+            "id": 1,
+            "user_id": 3,
+            "username": "janek",
+            "rating": 5,
+            "comment": "Świetna!"
+          },
+          ...
+        ]
+    """
     rows = (
         db.session.query(Review, User.username)
         .join(User, Review.user_id == User.id)

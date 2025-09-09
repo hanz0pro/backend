@@ -9,6 +9,40 @@ from . import api
 @api.route("/wishlist/<int:game_id>", methods=["POST"])
 @jwt_required()
 def add_to_wishlist(game_id):
+    """
+    Dodaje grę do wishlisty zalogowanego użytkownika.
+
+    Args:
+        game_id (int): ID gry do dodania.
+
+    Request:
+        Wymaga JWT w nagłówku `Authorization: Bearer <token>`.
+
+    Response (201 Created):
+        {
+          "message": "Dodano do wishlisty.",
+          "item": {
+            "id": 5,
+            "game_id": 10,
+            "user_id": 3
+          }
+        }
+
+    Response (200 OK) – gra już na wishliście:
+        {
+          "message": "Gra już jest na Twojej wishliście."
+        }
+
+    Response (404 Not Found):
+        {
+          "message": "Gra nie istnieje."
+        }
+
+    Response (500 Internal Server Error):
+        {
+          "message": "Nie udało się dodać do wishlisty."
+        }
+    """
     user_id = get_jwt_identity()
 
     # Sprawdź czy gra istnieje
@@ -44,6 +78,32 @@ def add_to_wishlist(game_id):
 @api.route("/users/me/wishlist", methods=["GET"])
 @jwt_required()
 def get_my_wishlist():
+    """
+    Pobiera wishlistę zalogowanego użytkownika.
+
+    Request:
+        Wymaga JWT w nagłówku `Authorization: Bearer <token>`.
+
+    Response (200 OK):
+        [
+          {
+            "wishlist_item_id": 5,
+            "game_id": 10,
+            "title": "Wiedźmin 3",
+            "description": "Gra RPG w świecie fantasy",
+            "price": 199.99,
+            "discount": 20.0,
+            "image_path": "static/images/games/witcher3.png",
+            "genres": ["RPG", "Adventure"],
+            "tags": ["Open World", "Singleplayer"]
+          },
+          ...
+        ]
+
+    Note:
+        - Wynik zawiera wszystkie szczegóły gier z wishlisty.
+        - `discount` jest zwracany jako `0` jeśli brak wartości w bazie.
+    """
     user_id = get_jwt_identity()
     items = (
         db.session.query(WishList, Game)
